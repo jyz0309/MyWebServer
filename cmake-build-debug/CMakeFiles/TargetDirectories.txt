@@ -1,0 +1,3 @@
+/data/C++_Test/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/data/C++_Test/cmake-build-debug/CMakeFiles/C___Test.dir
+/data/C++_Test/cmake-build-debug/CMakeFiles/edit_cache.dir
