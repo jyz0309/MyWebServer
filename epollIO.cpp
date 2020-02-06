@@ -6,6 +6,7 @@ using namespace std;
 pthread_mutex_t qlock;
 pthread_cond_t cont;
 priority_queue<timer*, deque<timer*>, timerCmp> myTimerQueue;
+unordered_map<int,timer*> fd2time;
 
 void setnonblocking(int fd){
     int old_option = fcntl(fd, F_GETFL);
@@ -20,7 +21,7 @@ void *check_time(void *args){
             pthread_cond_wait(&cont,&qlock);
         }
         if(myTimerQueue.top()->deleted==true||time(NULL)-myTimerQueue.top()->used_time > TIMELIMIT){
-            cout<<myTimerQueue.size()<<endl;
+            cout<<"超时删除，队列大小："<<myTimerQueue.size()<<endl;
             timer* cur = myTimerQueue.top();
             myTimerQueue.pop();
             delete cur; //这里进行了二次删除
@@ -28,15 +29,12 @@ void *check_time(void *args){
         pthread_mutex_unlock(&qlock);
     }
 }
+
 void handle(void *args){
     RequestData *req_data = (RequestData*)args;
-    //req_data->updatetimer();
-    req_data->do_read();
-    req_data->do_write();
-    //else{
-        //delete req_data;
-        //cout<<"read error"<<endl;
-    //}
+    if(req_data->do_read()) {
+        req_data->do_write();
+    }
     return ;
 }
 
@@ -45,19 +43,18 @@ void my_epoll(int listenfd){
     struct epoll_event event[EPOLLEVENTS];
     int ret;
     epollfd = epoll_create(FDSIZE); //建立一颗红黑树存储需要监视的socket以及对应的事件，建立双向链表存储准备就绪的事件
+    //setnonblocking(epollfd);
     pthread_mutex_init(&qlock, NULL);
     pthread_cond_init(&cont,NULL);
     pthread_t *check_thread = (pthread_t *)malloc(sizeof(pthread_t)); //检查线程
     pthread_create(check_thread,NULL, check_time, NULL);
-    RequestData *data = new RequestData();
+    RequestData *data = new RequestData(epollfd,listenfd);
     setnonblocking(listenfd);
-    data->setfd(epollfd, listenfd);
     threadpool_t* pool = threadpool_create(8, 65535);
-    add_event(epollfd,listenfd,data,EPOLLIN); //为监听套接字标记上EPOLLIN，确保可以执行ACCEPT()
+    add_event(epollfd,listenfd,data,EPOLLIN); //为监听套接字标记上EPOLLIN，确保可以执行ACCEPT(),不能使用EPOLLET！
     while(true){
         ret = epoll_wait(epollfd,event,EPOLLEVENTS,-1); //观察双向链表，等待事件的就绪，成功时返回就绪事件数目。
         handle_events(epollfd,event,ret,listenfd, pool);
-        // check_time();
     }
     close(epollfd);
 }
@@ -84,8 +81,7 @@ void handle_accpet(int epollfd,int listenfd)
     else
     {
         cout<<"accept a new client"<<endl;
-        RequestData *data = new RequestData();
-        data->setfd(epollfd,clifd);
+        RequestData *data = new RequestData(epollfd,clifd);
         add_event(epollfd,clifd,data,EPOLLIN|EPOLLET);
     }
 }
@@ -93,10 +89,9 @@ void handle_accpet(int epollfd,int listenfd)
 //epoll_ctl的添加事件情况
 int add_event(int epollfd,int fd,void *data,int state)
 {
-    setnonblocking(fd);
     struct epoll_event ev;
     ev.events = state;
-    ev.data.ptr = (void*)data;
+    ev.data.ptr = data;
     if(epoll_ctl(epollfd,EPOLL_CTL_ADD,fd,&ev)==-1){
         //cout<<"增加失败"<<endl;
         perror("epoll_add");
@@ -110,7 +105,7 @@ int delete_event(int epollfd,int fd,void *data, int state)
 {
     struct epoll_event ev;
     ev.events = state;
-    ev.data.ptr = (void*)data;
+    ev.data.ptr = data;
     if(epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,&ev)==-1) {
         //cout<<"删除失败"<<endl;
         perror("epoll_del");
@@ -124,7 +119,7 @@ int modify_event(int epollfd,int fd,void *data,int state)
 {
     struct epoll_event ev;
     ev.events = state;
-    ev.data.ptr = (void*)data;
+    ev.data.ptr = data;
     if(epoll_ctl(epollfd,EPOLL_CTL_MOD,fd,&ev)==-1) {
         //cout<<"修改失败"<<endl;
         perror("epoll_mod");
@@ -133,26 +128,81 @@ int modify_event(int epollfd,int fd,void *data,int state)
     return 1;
 }
 
+RequestData::RequestData(int epollfd_, int fd_):epollfd(epollfd_),fd(fd_),keep_alive(0) {}
 
+RequestData::~RequestData() {
+    perror("~RequestData");
+    close(fd);
+}
+
+bool RequestData::do_read()
+{
+    int msgLen = 0;
+    char buffer[BUFFER_SIZE];
+    memset(buffer,'\0',BUFFER_SIZE);
+    if((msgLen = recv(fd, buffer, BUFFER_SIZE,0)) == -1)
+    {
+        cout<<"Error handling incoming request\r\n"<<endl;
+        delete_event(epollfd,fd,this,EPOLLIN|EPOLLET);
+        auto iter = fd2time.find(fd);
+        if(iter!=fd2time.end()){
+            fd2time[fd]->deleted=true;
+            fd2time.erase(iter);
+        }
+        return false;
+    }
+    else if(msgLen==0)
+    {
+        cout<<"client closed\r\n"<<endl;
+        close(fd);
+        delete_event(epollfd,fd,this,EPOLLIN|EPOLLET);
+        //close(fd);
+        auto iter = fd2time.find(fd);
+        if(iter!=fd2time.end()){
+            fd2time[fd]->deleted=true;
+            fd2time.erase(iter);
+        }
+        return false;
+    }
+    else
+    {
+        this->getRequestHead(buffer,msgLen); //获取请求头(method和uri)
+        this->do_response(); //制作响应报文
+        return true;
+    }
+}
+
+//发送数据
+void RequestData::do_write()
+{
+    send(fd,responseheader.c_str(),responseheader.size(),0);
+    send(fd,content.c_str(),content.size(),0);
+    if(keep_alive)
+    {
+        cout<<"keep alive ok"<<endl;
+        if(mytimer==NULL) {
+            pthread_mutex_lock(&qlock);
+            cout<<"添加计时器"<<endl;
+            timer *cur = new timer(this);
+            fd2time[fd] = cur;
+            this->mytimer = cur;
+            myTimerQueue.push(cur);
+            if (myTimerQueue.size() == 1) {
+                pthread_cond_signal(&cont);
+            }
+            pthread_mutex_unlock(&qlock);
+        }
+        this->reset();
+    }
+    else{
+        delete_event(epollfd,fd,this,EPOLLIN|EPOLLET);
+        delete this;
+        return;
+    }
+}
 
 int RequestData::getfd() {
     return fd;
-}
-
-void RequestData::setfd(int epoll_fd,int _fd) {
-    epollfd = epoll_fd;
-    fd = _fd;
-}
-void RequestData::updatetimer() {
-    if(mytimer!=NULL){
-        //cout<<"更新时间"<<endl;
-        mytimer->used_time = time(NULL);
-    }
-}
-void RequestData::addtimer(timer* mytime) {
-    cout<<"添加计时器"<<endl;
-    this->mytimer = mytime;
-
 }
 
 void RequestData::getRequestHead(char *buffer,int msgLen)
@@ -172,7 +222,7 @@ void RequestData::do_response()
 {
     if(method=="POST")
     {
-        this->do_post_response();
+        //this->do_post_response();
     }
     else if(method=="HEAD")
     {
@@ -185,16 +235,6 @@ void RequestData::do_response()
     }
 }
 
-//发送POST请求响应
-void RequestData::do_post_response(){
-    string statusCode;
-    content = this->getContent_Post(statusCode);
-    responseheader=this->constructHeader();
-}
-
-string RequestData::getContent_Post(string &statusCode)
-{
-}
 
 //发送GET请求响应
 void RequestData::do_get_response()
@@ -223,7 +263,7 @@ string RequestData::getContent(string &statusCode)
         getline(f,tmp);
         content += tmp;
     }
-     status="200 OK";
+    status="200 OK";
     f.close();
     return content;
 }
@@ -325,82 +365,14 @@ string RequestData::constructHeader()
     return message;
 }
 
-bool RequestData::do_read()
-{
-    int msgLen = 0;
-    char buffer[BUFFER_SIZE];
-    memset(buffer,'\0',BUFFER_SIZE);
-    if((msgLen = recv(fd, buffer, BUFFER_SIZE,0)) == -1)
-    {
-        cout<<"Error handling incoming request"<<endl;
-        close(fd);
-        delete_event(epollfd,fd,this,EPOLLIN|EPOLLET);
-        return false;
-    }
-    else if(msgLen==0)
-    {
-        cout<<"client closed\r\n"<<endl;
-        close(fd);
-        delete_event(epollfd,fd,this,EPOLLIN|EPOLLET);
-        return false;
-    }
-    else
-    {
-        this->getRequestHead(buffer,msgLen); //获取请求头(method和uri)
-        this->do_response(); //制作响应报文
-        modify_event(epollfd,fd,this,EPOLLOUT); // 更新事件
-        return true;
-    }
-}
-
-//发送数据
-void RequestData::do_write()
-{
-    send(fd,responseheader.c_str(),responseheader.size(),0);
-    send(fd,content.c_str(),content.size(),0);
-    if(keep_alive)
-    {
-        cout<<"keep alive ok"<<endl;
-        modify_event(epollfd,fd,this,EPOLLIN|EPOLLET);
-        if(mytimer==NULL) {
-            pthread_mutex_lock(&qlock);
-            timer *cur = new timer(this);
-            this->addtimer(cur);
-            myTimerQueue.push(cur);
-            if (myTimerQueue.size() == 1) {
-                pthread_cond_signal(&cont);
-            }
-            pthread_mutex_unlock(&qlock);
-        }
-        this->reset();
-    }
-    else{
-        //this->mytimer->setDeleted();
-        delete_event(epollfd,fd,this,EPOLLOUT);
-        //delete this;
-        close(fd);
-        return;
-    }
-}
-
 void RequestData::reset() {
     content.clear();
     method.clear();
     uri.clear();
+    re_content.clear();
+    method.clear();
     status.clear();
     contentType.clear();
     responseheader.clear();
     keep_alive = false;
-}
-
-RequestData::~RequestData() {
-    //delete_event(epollfd,fd,this,EPOLLOUT);
-    if(mytimer!=NULL){
-        cout<<"分离计时器中的请求对象"<<endl;
-        mytimer->clearReq();
-        cout<<"分离成功"<<endl;
-        mytimer = NULL;
-    }
-    perror("~RequestData");
-    close(fd);
 }

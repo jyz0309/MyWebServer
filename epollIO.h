@@ -29,19 +29,15 @@ private:
     string contentType; //以上都是构造请求时的内容
     int fd;
     int epollfd;
-    int keep_alive=0;
+    int keep_alive;
 public:
     timer *mytimer = NULL;
+    RequestData(int epollfd_, int fd_);
     ~RequestData();
-    void updatetimer();
-    void addtimer(timer* mytime);
     int getfd();
-    void setfd(int epoll_fd, int fd_);
     void getRequestHead(char *buffer,int msgLen);
     void do_response();
     void do_get_response();
-    void do_post_response();
-    string getContent_Post(string &statusCode);
     string getContent(string &statusCode);
     string errorContent();
     string parseURI();
@@ -65,12 +61,9 @@ public:
         if(data!=NULL){
             cout<<"销毁data"<<endl;
             delete data;
+            data = NULL;
         }
         perror("~timer");
-    }
-    void clearReq(){
-        data = NULL;
-        this->setDeleted();
     }
     void setDeleted(){
         deleted = true;

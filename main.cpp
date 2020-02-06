@@ -14,9 +14,10 @@ void addsig(int sig,void(handler)(int), bool restart=true){
     assert(sigaction(sig,&sa,NULL)!=-1);
 }
 
+
 int main(int argc, char **argv)
 {
-    const int port = 8080;
+    const int port = 1024;
     addsig(SIGPIPE, SIG_IGN);
     int listenfd=Socket(AF_INET,SOCK_STREAM,0);
     struct sockaddr_in servaddr;

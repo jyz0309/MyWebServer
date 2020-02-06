@@ -1,6 +1,3 @@
-//
-// Created by alkaid on 2019/12/8.
-//
 
 //
 // Created by alkaid on 2019/12/8.
@@ -199,7 +196,7 @@ int threadpool_destroy(threadpool_t *pool, int flags)
 
 //释放内存
 int threadpool_free(threadpool_t *
-    /* Did we manage to allocate ? */pool)
+/* Did we manage to allocate ? */pool)
 {
     if(pool == NULL || pool->started > 0)
     {
@@ -220,4 +217,3 @@ int threadpool_free(threadpool_t *
     free(pool);
     return 0;
 }
-
