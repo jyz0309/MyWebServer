@@ -1,18 +1,11 @@
-#include "epollIO.h"
+#include "Epoll.h"
+#include "Socket.h"
+#include <assert.h>
+#include "UtilFunc.h"
 
 using namespace std;
 
 //忽略SIGPIPE信号
-void addsig(int sig,void(handler)(int), bool restart=true){
-    struct sigaction sa;
-    memset(&sa,'\0', sizeof(sa));
-    sa.sa_handler=handler;
-    if(restart){
-        sa.sa_flags |= SA_RESTART;
-    }
-    sigfillset(&sa.sa_mask);
-    assert(sigaction(sig,&sa,NULL)!=-1);
-}
 
 
 int main(int argc, char **argv)
@@ -29,7 +22,7 @@ int main(int argc, char **argv)
     setsockopt(listenfd,SOL_SOCKET,SO_REUSEADDR,(const void*)&opt,sizeof(opt));
     Bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
     Listen(listenfd, 5);
-    setnonblocking(listenfd);
-    my_epoll(listenfd);
+    SetNonBlocking(listenfd);
+    Epoll(listenfd);
     return 0;
 }

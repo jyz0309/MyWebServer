@@ -1,8 +1,9 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/C___Test.dir/epollIO.cpp.o"
-  "CMakeFiles/C___Test.dir/epoll_server.cpp.o"
+  "CMakeFiles/C___Test.dir/Epoll.cpp.o"
+  "CMakeFiles/C___Test.dir/RequestData.cpp.o"
+  "CMakeFiles/C___Test.dir/Socket.cpp.o"
+  "CMakeFiles/C___Test.dir/ThreadPool.cpp.o"
   "CMakeFiles/C___Test.dir/main.cpp.o"
-  "CMakeFiles/C___Test.dir/threadpool.cpp.o"
   "C___Test"
   "C___Test.pdb"
 )

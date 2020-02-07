@@ -123,59 +123,113 @@ C___Test/fast:
 	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/build
 .PHONY : C___Test/fast
 
-epollIO.o: epollIO.cpp.o
+Epoll.o: Epoll.cpp.o
 
-.PHONY : epollIO.o
-
-# target to build an object file
-epollIO.cpp.o:
-	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/epollIO.cpp.o
-.PHONY : epollIO.cpp.o
-
-epollIO.i: epollIO.cpp.i
-
-.PHONY : epollIO.i
-
-# target to preprocess a source file
-epollIO.cpp.i:
-	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/epollIO.cpp.i
-.PHONY : epollIO.cpp.i
-
-epollIO.s: epollIO.cpp.s
-
-.PHONY : epollIO.s
-
-# target to generate assembly for a file
-epollIO.cpp.s:
-	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/epollIO.cpp.s
-.PHONY : epollIO.cpp.s
-
-epoll_server.o: epoll_server.cpp.o
-
-.PHONY : epoll_server.o
+.PHONY : Epoll.o
 
 # target to build an object file
-epoll_server.cpp.o:
-	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/epoll_server.cpp.o
-.PHONY : epoll_server.cpp.o
+Epoll.cpp.o:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/Epoll.cpp.o
+.PHONY : Epoll.cpp.o
 
-epoll_server.i: epoll_server.cpp.i
+Epoll.i: Epoll.cpp.i
 
-.PHONY : epoll_server.i
+.PHONY : Epoll.i
 
 # target to preprocess a source file
-epoll_server.cpp.i:
-	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/epoll_server.cpp.i
-.PHONY : epoll_server.cpp.i
+Epoll.cpp.i:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/Epoll.cpp.i
+.PHONY : Epoll.cpp.i
 
-epoll_server.s: epoll_server.cpp.s
+Epoll.s: Epoll.cpp.s
 
-.PHONY : epoll_server.s
+.PHONY : Epoll.s
 
 # target to generate assembly for a file
-epoll_server.cpp.s:
-	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/epoll_server.cpp.s
-.PHONY : epoll_server.cpp.s
+Epoll.cpp.s:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/Epoll.cpp.s
+.PHONY : Epoll.cpp.s
+
+RequestData.o: RequestData.cpp.o
+
+.PHONY : RequestData.o
+
+# target to build an object file
+RequestData.cpp.o:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/RequestData.cpp.o
+.PHONY : RequestData.cpp.o
+
+RequestData.i: RequestData.cpp.i
+
+.PHONY : RequestData.i
+
+# target to preprocess a source file
+RequestData.cpp.i:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/RequestData.cpp.i
+.PHONY : RequestData.cpp.i
+
+RequestData.s: RequestData.cpp.s
+
+.PHONY : RequestData.s
+
+# target to generate assembly for a file
+RequestData.cpp.s:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/RequestData.cpp.s
+.PHONY : RequestData.cpp.s
+
+Socket.o: Socket.cpp.o
+
+.PHONY : Socket.o
+
+# target to build an object file
+Socket.cpp.o:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/Socket.cpp.o
+.PHONY : Socket.cpp.o
+
+Socket.i: Socket.cpp.i
+
+.PHONY : Socket.i
+
+# target to preprocess a source file
+Socket.cpp.i:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/Socket.cpp.i
+.PHONY : Socket.cpp.i
+
+Socket.s: Socket.cpp.s
+
+.PHONY : Socket.s
+
+# target to generate assembly for a file
+Socket.cpp.s:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/Socket.cpp.s
+.PHONY : Socket.cpp.s
+
+ThreadPool.o: ThreadPool.cpp.o
+
+.PHONY : ThreadPool.o
+
+# target to build an object file
+ThreadPool.cpp.o:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/ThreadPool.cpp.o
+.PHONY : ThreadPool.cpp.o
+
+ThreadPool.i: ThreadPool.cpp.i
+
+.PHONY : ThreadPool.i
+
+# target to preprocess a source file
+ThreadPool.cpp.i:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/ThreadPool.cpp.i
+.PHONY : ThreadPool.cpp.i
+
+ThreadPool.s: ThreadPool.cpp.s
+
+.PHONY : ThreadPool.s
+
+# target to generate assembly for a file
+ThreadPool.cpp.s:
+	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/ThreadPool.cpp.s
+.PHONY : ThreadPool.cpp.s
 
 main.o: main.cpp.o
 
@@ -204,33 +258,6 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/main.cpp.s
 .PHONY : main.cpp.s
 
-threadpool.o: threadpool.cpp.o
-
-.PHONY : threadpool.o
-
-# target to build an object file
-threadpool.cpp.o:
-	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/threadpool.cpp.o
-.PHONY : threadpool.cpp.o
-
-threadpool.i: threadpool.cpp.i
-
-.PHONY : threadpool.i
-
-# target to preprocess a source file
-threadpool.cpp.i:
-	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/threadpool.cpp.i
-.PHONY : threadpool.cpp.i
-
-threadpool.s: threadpool.cpp.s
-
-.PHONY : threadpool.s
-
-# target to generate assembly for a file
-threadpool.cpp.s:
-	$(MAKE) -f CMakeFiles/C___Test.dir/build.make CMakeFiles/C___Test.dir/threadpool.cpp.s
-.PHONY : threadpool.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -240,18 +267,21 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... C___Test"
 	@echo "... edit_cache"
-	@echo "... epollIO.o"
-	@echo "... epollIO.i"
-	@echo "... epollIO.s"
-	@echo "... epoll_server.o"
-	@echo "... epoll_server.i"
-	@echo "... epoll_server.s"
+	@echo "... Epoll.o"
+	@echo "... Epoll.i"
+	@echo "... Epoll.s"
+	@echo "... RequestData.o"
+	@echo "... RequestData.i"
+	@echo "... RequestData.s"
+	@echo "... Socket.o"
+	@echo "... Socket.i"
+	@echo "... Socket.s"
+	@echo "... ThreadPool.o"
+	@echo "... ThreadPool.i"
+	@echo "... ThreadPool.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... threadpool.o"
-	@echo "... threadpool.i"
-	@echo "... threadpool.s"
 .PHONY : help
 
 
