@@ -10,6 +10,7 @@
 #include <ctime>
 #include <cstring>
 #include <sstream>
+#include <json/json.h>
 #include <fstream>
 #include <string>
 #include <unordered_map>
@@ -42,6 +43,8 @@ public:
     void getRequestHead(char *buffer,int msgLen);
     void do_response();
     void do_get_response();
+    void do_post_response();
+    Json::Value handle_post_req(Json::Value data,string uri_name);
     string getContent(string &statusCode);
     string errorContent();
     string parseURI();

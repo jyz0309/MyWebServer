@@ -103,7 +103,7 @@ void RequestData::do_response()
 {
     if(method=="POST")
     {
-        //this->do_post_response();
+        this->do_post_response();
     }
     else if(method=="HEAD")
     {
@@ -116,6 +116,21 @@ void RequestData::do_response()
     }
 }
 
+void RequestData::do_post_response() {
+    string statusCode;
+    content = this->getContent(statusCode);
+    string uri_name = this->parseURI();
+    Json::Reader reader;
+    Json::Value data;
+    reader.parse(content, data);
+    // 根据data进行重定向
+    responseheader=this->constructHeader();
+}
+
+Json::Value RequestData::handle_post_req(Json::Value data, string uri_name){
+    //根据DATA的值进行一系列处理
+    return data;
+}
 
 //发送GET请求响应
 void RequestData::do_get_response()
